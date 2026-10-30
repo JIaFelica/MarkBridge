@@ -23,8 +23,16 @@ Dialect adaptation rules (task lists, tables, strikethrough, autolinks) are adde
 
 ## Installation
 
+Install the pinned dependencies:
+
 ```bash
 python -m pip install -r requirements.txt
+```
+
+On Windows, if `python` opens the Microsoft Store or returns no output, use the Python launcher (`py`) instead:
+
+```powershell
+py -m pip install -r requirements.txt
 ```
 
 ## Usage
@@ -32,7 +40,14 @@ python -m pip install -r requirements.txt
 Run the command-line prototype from the project root:
 
 ```bash
-python -m markbridge.cli --input fixtures/gfm_basic.md --from gfm --to commonmark --output output.md --ast-out ast.json --report report.json
+python -m markbridge.cli --input fixtures/gfm_basic.md --from gfm --to commonmark --output output/output.md --ast-out output/ast.json --report output/report.json
+```
+
+Windows equivalent with the Python launcher:
+
+```powershell
+New-Item -ItemType Directory -Force -Path output
+py -m markbridge.cli --input fixtures/gfm_basic.md --from gfm --to commonmark --output output/output.md --ast-out output/ast.json --report output/report.json
 ```
 
 CLI options:
@@ -49,6 +64,12 @@ CLI options:
 
 ```bash
 python -m pytest
+```
+
+Windows equivalent:
+
+```powershell
+py -m pytest
 ```
 
 ## Project structure
