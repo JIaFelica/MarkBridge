@@ -3,9 +3,6 @@
 The report records the Pandoc version, source/target profiles, structural
 statistics and every diagnostic event. Event levels reserve the categories used
 by later iterations: info, fallback, loss and warning.
-
-报告记录 Pandoc 版本、源/目标配置、结构统计与每条诊断事件。
-事件级别预留 info / fallback / loss / warning，供后续迭代的降级与丢失提示使用。
 """
 
 from __future__ import annotations
@@ -14,7 +11,7 @@ import json
 from dataclasses import dataclass, field, asdict
 
 
-# Event severity levels. 事件级别常量。
+# Event severity levels.
 LEVEL_INFO = "info"
 LEVEL_FALLBACK = "fallback"
 LEVEL_LOSS = "loss"
@@ -23,20 +20,17 @@ LEVEL_WARNING = "warning"
 
 @dataclass
 class DiagnosticEvent:
-    """One recorded diagnostic event. 一条诊断记录。"""
+    """One recorded diagnostic event."""
 
-    stage: str                                   # pipeline stage where it occurred 发生阶段
-    message: str                                 # human-readable description 可读说明
-    node_type: str | None = None                 # Pandoc AST node type, if applicable 相关节点类型
-    policy: str | None = None                    # policy applied, if any 所用策略
-    level: str = LEVEL_INFO                      # info / fallback / loss / warning 级别
+    stage: str                                   # Pipeline stage where it occurred
+    message: str                                 # Human-readable description
+    node_type: str | None = None                 # Pandoc AST node type, if applicable
+    policy: str | None = None                    # Policy applied, if any
+    level: str = LEVEL_INFO                      # info / fallback / loss / warning
 
 
 class ConversionReport:
-    """Collects metadata, statistics and diagnostic events for one conversion.
-
-    汇总一次转换的元数据、统计信息与诊断事件，可输出文本或 JSON。
-    """
+    """Collects metadata, statistics and diagnostic events for one conversion."""
 
     def __init__(self, source_profile: str, target_profile: str, pandoc_version: str):
         self.source_profile = source_profile
@@ -53,7 +47,7 @@ class ConversionReport:
         policy: str | None = None,
         level: str = LEVEL_INFO,
     ) -> None:
-        """Append a diagnostic event. 追加一条诊断事件。"""
+        """Append a diagnostic event."""
         self.events.append(
             DiagnosticEvent(
                 stage=stage,
@@ -65,18 +59,18 @@ class ConversionReport:
         )
 
     def set_statistic(self, name: str, value: int) -> None:
-        """Store a structural statistic (e.g. block count). 记录结构统计值。"""
+        """Store a structural statistic, such as the block count."""
         self.statistics[name] = value
 
     def event_counts(self) -> dict[str, int]:
-        """Count events by level. 按级别统计事件数量。"""
+        """Count events by level."""
         counts: dict[str, int] = {}
         for event in self.events:
             counts[event.level] = counts.get(event.level, 0) + 1
         return counts
 
     def summary(self) -> dict:
-        """Machine-readable report dictionary. 机器可读的报告字典。"""
+        """Machine-readable report dictionary."""
         return {
             "pandoc_version": self.pandoc_version,
             "source_profile": self.source_profile,
@@ -87,11 +81,11 @@ class ConversionReport:
         }
 
     def to_json(self) -> str:
-        """Serialise the report as pretty-printed JSON. 序列化为 JSON 文本。"""
+        """Serialise the report as pretty-printed JSON."""
         return json.dumps(self.summary(), indent=2, ensure_ascii=False)
 
     def to_text(self) -> str:
-        """Human-readable plain-text report. 人类可读的纯文本报告。"""
+        """Human-readable plain-text report."""
         lines = [
             "MarkBridge conversion report",
             f"  Pandoc version : {self.pandoc_version}",

@@ -3,9 +3,6 @@
 Example:
     python -m markbridge.cli --input sample.md --from gfm --to commonmark \
         --output out.md --ast-out ast.json --report report.json
-
-命令行原型：读取 Markdown 文件，解析为 AST，回写目标 Markdown，并生成报告。
-方言规则将在后续迭代接入。
 """
 
 from __future__ import annotations
@@ -19,7 +16,7 @@ from .profiles import supported_profiles
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Create the CLI argument parser. 构造命令行参数解析器。"""
+    """Create the CLI argument parser."""
     parser = argparse.ArgumentParser(
         prog="markbridge",
         description="AST-based CommonMark <-> GFM conversion prototype.",
@@ -61,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run(args: argparse.Namespace) -> int:
-    """Execute the CLI workflow. 执行命令行工作流，返回退出码。"""
+    """Execute the CLI workflow and return the exit code."""
     source_path = Path(args.input)
     if not source_path.exists():
         print(f"Error: input file not found: {source_path}", file=sys.stderr)
@@ -98,7 +95,7 @@ def run(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Entry point used by `python -m markbridge.cli`. 程序入口。"""
+    """Entry point used by `python -m markbridge.cli`."""
     args = build_parser().parse_args(argv)
     return run(args)
 

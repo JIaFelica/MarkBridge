@@ -7,10 +7,6 @@ Dialect adaptation rules (task lists, tables, strikethrough, autolinks) are
 not applied yet; they are implemented in Iteration 2 and 3. This prototype
 establishes the parse / AST / write boundary, records Pandoc metadata and
 structural statistics, and produces the conversion report.
-
-本迭代流程：Markdown 文本 -> Pandoc JSON AST -> Pandoc writer -> Markdown 文本。
-方言转换规则尚未接入（留待第 2、3 轮）；本原型先打通解析 / AST / 回写边界，
-记录 Pandoc 元数据、结构统计并生成转换报告。
 """
 
 from __future__ import annotations
@@ -23,16 +19,12 @@ import pypandoc
 from .profiles import get_profile
 from .diagnostics import ConversionReport, LEVEL_INFO
 
-# Pin and expose the Pandoc version used by this environment.
-# 记录当前环境使用的 Pandoc 版本，便于规格书与报告锁定版本。
+# Record the Pandoc version used by this environment.
 PANDOC_VERSION = pypandoc.get_pandoc_version()
 
 
 def parse_to_ast(markdown_text: str, source_profile: str, report: ConversionReport) -> dict[str, Any]:
-    """Parse Markdown into the Pandoc JSON AST.
-
-    用源配置对应的 reader 把 Markdown 解析为 Pandoc JSON AST（字典形式）。
-    """
+    """Parse Markdown into the Pandoc JSON AST using the source profile reader."""
     profile = get_profile(source_profile)
     report.add(
         stage="parsing",
@@ -58,10 +50,7 @@ def parse_to_ast(markdown_text: str, source_profile: str, report: ConversionRepo
 
 
 def ast_to_markdown(ast: dict[str, Any], target_profile: str, report: ConversionReport) -> str:
-    """Serialise the AST back into target-profile Markdown.
-
-    用目标配置对应的 writer 把 AST 回写为目标方言的 Markdown。
-    """
+    """Serialise the AST back into target-profile Markdown using the target writer."""
     profile = get_profile(target_profile)
     report.add(
         stage="writing",
@@ -83,7 +72,6 @@ def convert(
 ) -> tuple[str, dict[str, Any], ConversionReport]:
     """Run the prototype pipeline and return output Markdown, AST and report.
 
-    运行原型管线，返回转换后的 Markdown、AST 字典与转换报告。
     Iteration 1: no dialect rules are applied yet; the AST is parsed and written
     through the selected readers/writers.
     """

@@ -1,7 +1,8 @@
 """Automated tests for the Iteration 1 MarkBridge prototype pipeline.
 
-测试覆盖：AST 解析、往返保留标题文本、报告元数据、配置校验与 CLI 端到端流程。
-Dialect adaptation rules are not tested here; they belong to later iterations.
+Covers AST parsing, heading preservation on round trip, report metadata,
+profile validation and the CLI end-to-end flow. Dialect adaptation rules are
+not tested here; they belong to later iterations.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 
 
 def test_parse_ast_contains_blocks():
-    """The parsed AST must contain non-empty top-level blocks. 解析后的 AST 必须含块。"""
+    """The parsed AST must contain non-empty top-level blocks."""
     text = (FIXTURES / "commonmark_basic.md").read_text(encoding="utf-8")
     _, ast, report = convert(text, "commonmark", "commonmark")
 
@@ -27,7 +28,7 @@ def test_parse_ast_contains_blocks():
 
 
 def test_round_trip_preserves_heading_text():
-    """A heading survives parse -> write round trip. 标题文本在往返后保留。"""
+    """A heading survives the parse -> write round trip."""
     text = "# Demo Title\n\nSome body text.\n"
     output, _, report = convert(text, "commonmark", "commonmark")
 
@@ -36,7 +37,7 @@ def test_round_trip_preserves_heading_text():
 
 
 def test_report_records_pandoc_version_and_profiles():
-    """Report metadata records Pandoc version and source/target profiles. 报告记录版本与配置。"""
+    """Report metadata records the Pandoc version and source/target profiles."""
     text = "# Sample\n"
     _, _, report = convert(text, "gfm", "commonmark")
     summary = report.summary()
@@ -48,13 +49,13 @@ def test_report_records_pandoc_version_and_profiles():
 
 
 def test_unknown_profile_raises():
-    """An unsupported profile must raise a clear ValueError. 不支持的配置应抛出明确错误。"""
+    """An unsupported profile must raise a clear ValueError."""
     with pytest.raises(ValueError):
         convert("# X\n", "markdown-it", "commonmark")
 
 
 def test_cli_end_to_end(tmp_path: Path):
-    """CLI writes output Markdown, AST JSON and report files. CLI 端到端生成三类文件。"""
+    """CLI writes the output Markdown, AST JSON and report files."""
     input_file = tmp_path / "input.md"
     output_file = tmp_path / "output.md"
     ast_file = tmp_path / "ast.json"

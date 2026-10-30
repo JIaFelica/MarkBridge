@@ -9,10 +9,7 @@ doc = Document()
 THEME_ATTRS = ("w:asciiTheme", "w:hAnsiTheme", "w:cstheme", "w:eastAsiaTheme")
 
 def force_arial(style):
-    """Force Arial on a style and remove theme-font selectors that shadow it.
-
-    强制样式使用 Arial，并删除会遮蔽显式字体的主题字体属性。
-    """
+    """Force Arial on a style and remove theme-font selectors that shadow it."""
     rpr = style.element.get_or_add_rPr()
     rfonts = rpr.find(qn("w:rFonts"))
     if rfonts is None:
@@ -55,10 +52,7 @@ def bullet(text):
     return p
 
 def status_table(rows):
-    """Two-column requirement vs implementation-status table.
-
-    规格书要求与本轮实现状态对照表，统一 Arial 字号。
-    """
+    """Two-column requirement vs implementation-status table."""
     table = doc.add_table(rows=1, cols=2)
     table.style = "Table Grid"
     header = table.rows[0].cells
