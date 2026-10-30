@@ -54,6 +54,32 @@ def bullet(text):
     p.paragraph_format.space_after = Pt(2)
     return p
 
+def status_table(rows):
+    """Two-column requirement vs implementation-status table.
+
+    规格书要求与本轮实现状态对照表，统一 Arial 字号。
+    """
+    table = doc.add_table(rows=1, cols=2)
+    table.style = "Table Grid"
+    header = table.rows[0].cells
+    header[0].text = "Specification requirement"
+    header[1].text = "Iteration 1 status"
+    for req, status in rows:
+        cells = table.add_row().cells
+        cells[0].text = req
+        cells[1].text = status
+    for row in table.rows:
+        for cell in row.cells:
+            for para in cell.paragraphs:
+                for run in para.runs:
+                    run.font.name = "Arial"
+                    run.font.size = Pt(9.5)
+    for run in table.rows[0].cells[0].paragraphs[0].runs:
+        run.font.bold = True
+    for run in table.rows[0].cells[1].paragraphs[0].runs:
+        run.font.bold = True
+    return table
+
 # ---- Title block ----
 title = doc.add_heading("MarkBridge — First Iteration Report", level=0)
 title.runs[0].font.size = Pt(18)
@@ -93,7 +119,22 @@ h2("6. Changes made")
 bullet("Used bundled Pandoc through pypandoc-binary rather than assuming a system installation; panflute is retained for later rule work.")
 bullet("Kept Iteration 1 to the parse/write prototype and deferred dialect rules according to the plan.")
 
-h2("7. What is planned for the next iteration")
+h2("7. Specification requirements and Iteration 1 status")
+body("The table below maps the CLI, comparison, reporting and compatibility requirements from the specification to what this prototype implements now, what is only reserved, and what is deferred to later iterations.")
+status_table([
+    ("CLI command and parameter handling (input, source, target, policy, report).",
+     "Implemented: cli.py exposes --input, --from, --to, --output, --ast-out, --report and --policy."),
+    ("Conversion result presentation: output Markdown plus a human-readable or JSON report.",
+     "Implemented: output Markdown, AST JSON and a report are written; the report prints to the terminal and saves as text or JSON by file suffix."),
+    ("Source versus target comparison: source file is never modified; outputs are separated.",
+     "Basis implemented: the source is read-only and output goes to a separate file; diff tooling and a structural change report depend on later rules."),
+    ("Information loss presentation and strict mode.",
+     "Schema reserved: fallback, loss and warning levels and node/policy fields exist in diagnostics.py; real loss events and strict-mode stopping are deferred."),
+    ("Compatibility checking through the report.",
+     "Baseline implemented: the report records Pandoc version, profiles and block statistics; re-run comparison and output re-parsing validation are deferred."),
+])
+
+h2("8. What is planned for the next iteration")
 bullet("Implement AST adaptation rules for task lists and strikethrough.")
 bullet("Add the first configurable downgrade policy and expand diagnostics with fallback and loss events.")
 bullet("Add unit tests covering the new rules and nested cases.")
