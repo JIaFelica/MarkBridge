@@ -46,7 +46,6 @@ python -m markbridge.cli --input fixtures/gfm_basic.md --from gfm --to commonmar
 Windows equivalent with the Python launcher:
 
 ```powershell
-New-Item -ItemType Directory -Force -Path output
 py -m markbridge.cli --input fixtures/gfm_basic.md --from gfm --to commonmark --output output/output.md --ast-out output/ast.json --report output/report.json
 ```
 

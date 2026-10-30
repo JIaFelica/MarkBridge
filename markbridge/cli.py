@@ -65,6 +65,13 @@ def run(args: argparse.Namespace) -> int:
         return 1
 
     markdown_text = source_path.read_text(encoding="utf-8")
+
+    # 为所有输出文件自动创建父目录；目录已存在时不报错，
+    # 这样用户不需要先手动新建 output 文件夹。
+    for output_path in (args.output, args.ast_out, args.report):
+        if output_path:
+            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
     output, ast, report = convert(
         markdown_text,
         source_profile=args.source,
