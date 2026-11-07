@@ -1,15 +1,8 @@
-# -*- coding: utf-8 -*-
 """Build the MarkBridge First Iteration Report.
 
-The generated document reproduces docs/First_Iteration_Report.docx: same page
-geometry, margins, fonts, sizes, colours, table shading, row heights, bullet
-list and hyperlink fields.
-
-Usage:
-    py build_report.py [output.docx]
-
-Default output is docs/First_Iteration_Report_generated.docx, so the submitted
-copy is never overwritten.
+Reproduces docs/First_Iteration_Report.docx: page geometry, margins, fonts,
+sizes, colours, table shading, row heights, bullets and hyperlink fields.
+Usage: py build_report.py [output.docx]
 """
 import os
 import sys
@@ -28,7 +21,6 @@ SZ_BODY = "22"      # 11 pt
 SZ_HEADING = "26"   # 13 pt
 SZ_TITLE = "36"     # 18 pt
 SZ_SMALL = "20"     # 10 pt
-SZ_HEADER = None    # header lines inherit the 10 pt document default
 
 BODY_AFTER = "80"    # 4 pt
 BLANK_AFTER = "40"   # 2 pt
@@ -68,7 +60,7 @@ RPR_HEADING = [("rFonts", ARIAL), ("sz", {"val": SZ_HEADING}),
                ("szCs", {"val": SZ_HEADING}), ("rtl", RTX)]
 RPR_TITLE = [("color", {"val": NAVY}), ("sz", {"val": SZ_TITLE}),
              ("szCs", {"val": SZ_TITLE}), ("rtl", RTX)]
-RPR_HEADERLINE = [("rtl", RTX)]
+RPR_PLAIN = [("rtl", RTX)]
 RPR_LIST = [("rFonts", ARIAL), ("b", {"val": "0"}), ("bCs", {"val": "0"}),
             ("i", {"val": "0"}), ("iCs", {"val": "0"}),
             ("smallCaps", {"val": "0"}), ("strike", {"val": "0"}),
@@ -95,10 +87,10 @@ body = doc.element.body
 # --------------------------------------------------------------------------
 def set_style_rpr(style, items):
     element = style.element
-    for old in element.findall(w("rPr")):
-        element.remove(old)
+    for existing in element.findall(w("rPr")):
+        element.remove(existing)
     ppr = element.find(w("pPr"))
-    rpr = etree.Element(w("rPr"))
+    rpr = etree.SubElement(element, w("rPr"))
     for tag, attrs in items:
         sub(rpr, tag, attrs)
     if ppr is not None:
@@ -109,8 +101,8 @@ def set_style_rpr(style, items):
 
 def set_style_ppr(style, xml_fragment):
     element = style.element
-    for old in element.findall(w("pPr")):
-        element.remove(old)
+    for existing in element.findall(w("pPr")):
+        element.remove(existing)
     ppr = parse_xml(xml_fragment)
     rpr = element.find(w("rPr"))
     if rpr is not None:
@@ -122,16 +114,17 @@ def set_style_ppr(style, xml_fragment):
 def set_doc_defaults():
     defaults = doc.styles.element.find(w("docDefaults"))
     rpr_default = defaults.find(w("rPrDefault"))
-    for old in rpr_default.findall(w("rPr")):
-        rpr_default.remove(old)
+    for existing in rpr_default.findall(w("rPr")):
+        rpr_default.remove(existing)
     rpr = etree.SubElement(rpr_default, w("rPr"))
     sub(rpr, "rFonts", ARIAL)
 
 
 # Word spells these style ids differently, but they are the ids the submitted
 # report references; keeping them makes the two files line up one to one.
-for name, style_id in (("Normal", "1"), ("Heading 2", "3"), ("Title", "10")):
-    doc.styles[name].element.set(qn("w:styleId"), style_id)
+STYLE_IDS = {"Normal": "1", "Heading 2": "3", "Title": "10"}
+for style_name, style_identifier in STYLE_IDS.items():
+    doc.styles[style_name].element.set(qn("w:styleId"), style_identifier)
 
 set_doc_defaults()
 
@@ -155,14 +148,14 @@ set_style_rpr(heading2, [("rFonts", ARIAL), ("b", {}), ("bCs", {}),
                          ("sz", {"val": SZ_HEADING}), ("szCs", {"val": SZ_HEADING})])
 
 
-def add_table_style(style_id, name):
+def add_table_style(table_style_id, style_label):
     """Register the minimal table style the report's tables reference."""
     styles_el = doc.styles.element
     element = etree.SubElement(styles_el, w("style"))
     element.set(w("type"), "table")
     element.set(w("customStyle"), "1")
-    element.set(w("styleId"), style_id)
-    sub(element, "name", {"val": name})
+    element.set(w("styleId"), table_style_id)
+    sub(element, "name", {"val": style_label})
     sub(element, "basedOn", {"val": "TableGrid"})
     sub(element, "qFormat")
     sub(element, "uiPriority", {"val": "0"})
@@ -200,13 +193,11 @@ sub(sect_pr, "cols", {"space": "720", "num": "1"})
 # --------------------------------------------------------------------------
 numbering = doc.part.numbering_part.element
 NUM_ID = "1"
-abstract = etree.Element(w("abstractNum"))
+abstract = etree.SubElement(numbering, w("abstractNum"))
 abstract.set(w("abstractNumId"), "100")
 first_num = numbering.find(w("num"))
 if first_num is not None:
     first_num.addprevious(abstract)
-else:
-    numbering.append(abstract)
 sub(abstract, "multiLevelType", {"val": "singleLevel"})
 lvl = sub(abstract, "lvl", {"ilvl": "0"})
 sub(lvl, "start", {"val": "1"})
@@ -223,8 +214,8 @@ for candidate in numbering.findall(w("num")):
 if num is None:
     num = etree.SubElement(numbering, w("num"))
     num.set(w("numId"), NUM_ID)
-for old in num.findall(w("abstractNumId")):
-    num.remove(old)
+for existing in num.findall(w("abstractNumId")):
+    num.remove(existing)
 sub(num, "abstractNumId", {"val": "100"})
 
 
@@ -236,7 +227,7 @@ def new_para(ppr_items):
     p = etree.SubElement(body, w("p"))
     ppr = etree.SubElement(p, w("pPr"))
     for tag, attrs in ppr_items:
-        e = sub(ppr, tag, attrs)
+        sub(ppr, tag, attrs)
     return p, ppr
 
 
@@ -279,26 +270,28 @@ def heading(text):
     return p
 
 
-def para(text, lead=None, size=SZ_BODY, style_rpr=True):
-    """A body paragraph; an optional lead-in phrase is set in bold."""
-    items = [("spacing", {"after": BODY_AFTER})]
-    p, ppr = new_para(items)
-    if style_rpr:
-        mark = sub(ppr, "rPr")
-        for tag, attrs in RPR_MARK:
-            sub(mark, tag, attrs)
+def para(text, lead=None):
+    """A body paragraph, 11 pt; an optional lead-in phrase is set in bold."""
+    p, ppr = new_para([("spacing", {"after": BODY_AFTER})])
+    mark = sub(ppr, "rPr")
+    for tag, attrs in RPR_MARK:
+        sub(mark, tag, attrs)
     if lead:
         add_run(p, RPR_LEAD, lead)
-        add_run(p, RPR_TEXT, text)
-    elif size == SZ_BODY:
-        add_run(p, RPR_TEXT, text)
-    else:
-        add_run(p, RPR_HEADERLINE, text)
+    add_run(p, RPR_TEXT, text)
     return p
 
 
-def blank(after=BLANK_AFTER):
-    p, _ = new_para([("spacing", {"after": after})])
+def header_line(text):
+    """A cover line: 10 pt and no colour, inherited from the document default."""
+    p, _ = new_para([("spacing", {"after": BODY_AFTER})])
+    add_run(p, RPR_PLAIN, text)
+    return p
+
+
+def blank():
+    """The empty 2 pt paragraph that follows each table."""
+    p, _ = new_para([("spacing", {"after": BLANK_AFTER})])
     return p
 
 
@@ -378,12 +371,12 @@ RPR_TBL_HEAD_BOTTOM = [("rFonts", ARIAL), ("b", {}), ("bCs", {}),
                        ("szCs", {"val": SZ_BODY}), ("rtl", RTX)]
 
 
-def table(grid, rows, header_valign="center", header_after=("20", "240"),
-          style_id="14", header_rpr=None):
+def table(grid, rows, header_valign="center", header_after="20",
+          header_line="240", table_style_id="14", header_rpr=RPR_TBL_HEAD):
     """Two-column table built to the submitted report's exact geometry."""
     tbl = etree.SubElement(body, w("tbl"))
     tbl_pr = sub(tbl, "tblPr")
-    sub(tbl_pr, "tblStyle", {"val": style_id})
+    sub(tbl_pr, "tblStyle", {"val": table_style_id})
     sub(tbl_pr, "tblW", {"w": str(sum(grid)), "type": "dxa"})
     # Centre the table between the left and right margins.
     sub(tbl_pr, "jc", {"val": "center"})
@@ -419,11 +412,11 @@ def table(grid, rows, header_valign="center", header_after=("20", "240"),
             sub(tc_pr, "vAlign", {"val": header_valign if index == 0 else "center"})
             p = sub(tc, "p")
             ppr = sub(p, "pPr")
-            if index == 0 and header_after[1]:
-                sub(ppr, "spacing", {"after": header_after[0], "line": header_after[1],
+            if index == 0 and header_line:
+                sub(ppr, "spacing", {"after": header_after, "line": header_line,
                                      "lineRule": "auto"})
             elif index == 0:
-                sub(ppr, "spacing", {"after": header_after[0]})
+                sub(ppr, "spacing", {"after": header_after})
             else:
                 sub(ppr, "spacing", {"after": "20", "line": "240", "lineRule": "auto"})
             # Header cells are centred; body rows centre the left column and
@@ -449,11 +442,10 @@ def title_block():
 
 
 def header_lines():
-    para("AST-based conversion between CommonMark and GitHub Flavoured Markdown (GFM)",
-         size=SZ_HEADER, style_rpr=False)
-    para("Student: Xinyu Jia  |  Student ID: C00304524  |  Supervisor: Tom Corcoran  "
-         "|  Pandoc version: " + PANDOC_VERSION, size=SZ_HEADER, style_rpr=False)
-    para("Iteration period: Iteration 1 ", size=SZ_HEADER, style_rpr=False)
+    header_line("AST-based conversion between CommonMark and GitHub Flavoured Markdown (GFM)")
+    header_line("Student: Xinyu Jia  |  Student ID: C00304524  |  "
+                "Supervisor: Tom Corcoran  |  Pandoc version: " + PANDOC_VERSION)
+    header_line("Iteration period: Iteration 1 ")
 
 
 title_block()
@@ -613,8 +605,9 @@ table(
             "planned for Iteration 4.")},
     ],
     header_valign="bottom",
-    header_after=("80", None),
-    style_id="15",
+    header_after="80",
+    header_line="",
+    table_style_id="15",
     header_rpr=RPR_TBL_HEAD_BOTTOM,
 )
 blank()
