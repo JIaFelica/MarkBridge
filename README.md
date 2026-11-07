@@ -11,7 +11,7 @@ This iteration establishes the foundation and prototype pipeline:
 - Parse Markdown into the Pandoc JSON AST (CommonMark and GFM readers).
 - Serialise the AST back into Markdown through the selected writer.
 - Record Pandoc version, source/target profiles, structural statistics and diagnostic events.
-- Automated pytest suite covering parsing, round-trip behaviour, report metadata and the CLI.
+- Automated pytest suite covering parsing, the parse-and-write cycle, report metadata and the CLI.
 
 Dialect adaptation rules (task lists, tables, strikethrough, autolinks) are added in later iterations.
 
@@ -83,10 +83,13 @@ MarkBridge/
 │   └── cli.py             # Command-line interface
 ├── fixtures/              # Curated CommonMark and GFM sample documents
 ├── tests/                 # Automated pytest suite
-├── docs/                  # Feature matrix and supporting documentation
+├── docs/                  # Feature matrix and the iteration report
+├── conftest.py            # Adds the project root to Python's import path for pytest
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
+
 
 ## Iteration roadmap
 
